@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Story Number Editor</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0d1015;color:#f5f6fa;font:16px -apple-system,BlinkMacSystemFont,sans-serif}header{padding:20px 16px;background:#11151b;border-bottom:1px solid #2a303a}h1{font-size:21px;margin:0 0 5px}p{color:#a9afbb;font-size:13px;line-height:1.5}.wrap{max-width:600px;margin:auto;padding:14px}.panel{background:#171b22;border:1px solid #2a303a;border-radius:16px;padding:14px;margin-bottom:14px}label{display:block;margin:8px 0;color:#dce0e8;font-size:14px}input,button{font:inherit}input[type=file],input[type=number]{width:100%;padding:12px;background:#0e1218;border:1px solid #353c48;border-radius:10px;color:white}button{width:100%;border:0;border-radius:11px;background:#718cff;color:white;font-weight:650;padding:13px;margin-top:10px;min-height:46px}.preview{background:#080a0e;border-radius:14px;padding:8px;display:flex;justify-content:center}.preview canvas{width:100%;height:auto;max-width:420px;border-radius:8px}.note{font-size:12px;color:#a9afbb}.status{color:#b9c7ff;font-size:13px;min-height:18px;margin-top:8px}
+</style></head><body>
+<header><h1>Story Number Editor</h1><p>แก้ไขเฉพาะตัวเลขจำนวนผู้ชมบนภาพที่อัปโหลด</p></header>
+<div class="wrap">
+<section class="panel"><label for="upload">1. อัปโหลดภาพหน้าจอ</label><input id="upload" type="file" accept="image/*"><p>เลือกภาพหน้าจอ Story ของคุณ ระบบจะให้แก้ไขเฉพาะตัวเลข 294 ในตำแหน่งเดิมใต้รูปสตอรี่</p></section>
+<section class="panel"><label for="num">2. ตัวเลขใหม่</label><input id="num" type="number" min="0" max="999999" value="294"><button id="update">อัปเดตตัวอย่าง</button><button id="save">บันทึกภาพ PNG</button><div class="status" id="status"></div><p class="note">แก้ไขภาพจำลองที่บันทึกออกมาเท่านั้น ไม่เปลี่ยนยอดผู้ชมจริงใน Instagram</p></section>
+<section class="panel"><label>3. ตัวอย่างภาพ</label><div class="preview"><canvas id="canvas" width="710" height="1536"></canvas></div></section>
+</div>
+<script>
+const $=id=>document.getElementById(id),canvas=$("canvas"),ctx=canvas.getContext("2d");let img=null;
+function draw(){const W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);
+if(img){const scale=Math.max(W/img.width,H/img.height);const sw=W/scale,sh=H/scale;ctx.drawImage(img,(img.width-sw)/2,(img.height-sh)/2,sw,sh,0,0,W,H);
+ // mask only the original count near the lower edge of the story thumbnail, then draw replacement in approximately the same spot
+ const x=W*0.445,y=H*0.205;
+ ctx.fillStyle="rgba(30,34,39,.9)";ctx.fillRect(x-9,y-20,76,35);
+ ctx.fillStyle="#fff";ctx.font="bold 23px -apple-system,Arial,sans-serif";ctx.textAlign="left";ctx.fillText(String(Math.max(0,Number($("num").value)||0)),x+7,y+5);
+}else{ctx.fillStyle="#0b0e13";ctx.fillRect(0,0,W,H);ctx.fillStyle="#f5f6fa";ctx.font="bold 26px Arial";ctx.fillText("อัปโหลดภาพเพื่อเริ่มแก้ไข",30,60);ctx.fillStyle="#a9afbb";ctx.font="20px Arial";ctx.fillText("ตัวเลขจะแสดงบริเวณใต้รูปสตอรี่",30,100);ctx.fillStyle="#718cff";ctx.font="bold 23px Arial";ctx.fillText("👥  "+$("num").value,canvas.width*.45,canvas.height*.205)}}
+$("upload").addEventListener("change",e=>{const f=e.target.files?.[0];if(!f)return;const url=URL.createObjectURL(f),im=new Image();im.onload=()=>{img=im;draw();$("status").textContent="โหลดภาพแล้ว แก้ตัวเลขได้เลย";URL.revokeObjectURL(url)};im.onerror=()=>{$("status").textContent="เปิดภาพไม่สำเร็จ"};im.src=url});
+$("update").onclick=()=>{draw();$("status").textContent="อัปเดตตัวอย่างแล้ว"};$("num").addEventListener("input",draw);
+$("save").onclick=()=>{if(!img){$("status").textContent="กรุณาอัปโหลดภาพก่อน";return}draw();const a=document.createElement("a");a.download="story-number-edited.png";a.href=canvas.toDataURL("image/png");a.click();$("status").textContent="สร้างภาพ PNG แล้ว"};
+draw();
+</script></body></html>
